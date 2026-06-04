@@ -17,7 +17,8 @@ if os.path.exists(csv_path):
             if row:
                 valid_folders.add(row[0].strip())
 
-strings_to_encode = [f"{folder}ECG-ID" for folder in valid_folders]
+# Added '#' delimiter here for max length calculation
+strings_to_encode = [f"{folder}#ECG-ID" for folder in valid_folders]
 if strings_to_encode:
     max_len = max(len(s) for s in strings_to_encode)
 else:
@@ -27,13 +28,15 @@ for folder_name in os.listdir(source_dir):
     source_folder_path = os.path.join(source_dir, folder_name)
 
     if os.path.isdir(source_folder_path) and folder_name in valid_folders:
-        combined_text = f"{folder_name}ECG-ID"
+        # Added '#' delimiter here between the folder name and dataset string
+        combined_text = f"{folder_name}#ECG-ID"
         padded_text = combined_text.ljust(max_len)
 
+        # Swapped b64encode for b32encode and removed the trailing "=" symbols cleanly
         encoded_name = (
-            base64.b64encode(padded_text.encode("utf-8"))
+            base64.b32encode(padded_text.encode("utf-8"))
             .decode("utf-8")
-            .upper()
+            .replace("=", "")
         )
 
         target_folder_path = os.path.join(target_dir, encoded_name)
